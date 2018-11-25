@@ -32,6 +32,7 @@ def clean_data(df):
     # clean up the final data
     df.drop_duplicates(subset='message', inplace=True)
     df.dropna(subset=category_colnames, inplace=True)
+    df.related.replace(2, 0, inplace=True)
 
     return df
 
