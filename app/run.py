@@ -1,5 +1,6 @@
 import json
 import joblib
+import numpy as np
 import plotly
 import pandas as pd
 
@@ -8,7 +9,7 @@ from nltk.tokenize import word_tokenize
 
 from flask import Flask
 from flask import render_template, request, jsonify
-from plotly.graph_objs import Bar
+from plotly.graph_objs import Bar, Pie
 from sqlalchemy import create_engine
 
 
@@ -40,13 +41,48 @@ model = joblib.load("../models/disaster_model.pkl")
 def index():
 
     # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
 
+    original_counts = [df.original.notnull().sum(), df.original.isnull().sum()]
+    original_names = ['Translated', 'Not Translated']
+
+    lengths = df.message.str.split().str.len()
+    length_counts, length_division = np.histogram(lengths,
+                                              range=(0, lengths.quantile(0.99)))
+
     # create visuals
-    # TODO: Below is an example - modify to create your own visuals
     graphs = [
+        {
+            'data': [
+                Bar(
+                    x=length_division,
+                    y=length_counts
+                    )
+            ],
+
+            'layout': {
+                'title': 'Message Length Distribution',
+                },
+            'yaxis': {
+                'title': "Count"
+            },
+            'xaxis': {
+                'title': "Message Length"
+            }
+        },
+        {
+            'data': [
+                Pie(
+                    labels=original_names,
+                    values=original_counts
+                )
+            ],
+
+            'layout': {
+                'title': 'Percentage of Translated Messages',
+            }
+        },
         {
             'data': [
                 Bar(
