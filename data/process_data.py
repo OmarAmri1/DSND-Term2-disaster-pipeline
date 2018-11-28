@@ -3,7 +3,14 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
-    """loads the specified message and category data"""
+    """loads the specified message and category data
+    Args:
+        messages_filepath (string): The file path of the messages csv
+        categories_filepath (string): The file path of the categories cv
+
+    Returns:
+        df (pandas dataframe): The combined messages and categories df
+    """
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
     return pd.merge(messages, categories, on='id')
@@ -13,6 +20,12 @@ def clean_data(df):
         - drops duplicates
         - removes messages missing classes
         - cleans up the categories column
+
+    Args:
+        df (pandas dataframe): combined categories and messages df
+
+    Returns:
+        df (pandas dataframe): Cleaned dataframe with split categories
     """
     # expand the categories column
     categories = df.categories.str.split(';', expand=True)
@@ -37,7 +50,14 @@ def clean_data(df):
     return df
 
 def save_data(df, database_filename):
-    """Saves the resulting data to a sqlite db"""
+    """Saves the resulting data to a sqlite db
+    Args:
+        df (pandas dataframe): The cleaned dataframe
+        database_filename (string): the file path to save the db
+
+    Returns:
+        None
+    """
     engine = create_engine('sqlite:///'+database_filename)
     df.to_sql('labeled_messages', engine, index=False, if_exists='replace')
     engine.dispose()

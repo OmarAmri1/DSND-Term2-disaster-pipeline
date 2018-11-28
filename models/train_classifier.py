@@ -14,13 +14,21 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-
+nltk.download('stopwords')
 STOP_WORDS = nltk.corpus.stopwords.words("english")
 lemmatizer = nltk.stem.wordnet.WordNetLemmatizer()
 PUNCTUATION_TABLE = str.maketrans('', '', string.punctuation)
 
 def load_data(database_filepath):
-    """Loads X and Y and gets category names"""
+    """Loads X and Y and gets category names
+    Args:
+        database_filepath (str): string filepath of the sqlite database
+
+    Returns:
+        X (pandas dataframe): Feature data, just the messages
+        Y (pandas dataframe): Classification labels
+        category_names (list): List of the category names for classification
+    """
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql_table('labeled_messages', engine)
     engine.dispose()
@@ -33,7 +41,13 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
-    """Basic tokenizer that removes punctuation and stopwords then lemmatizes"""
+    """Basic tokenizer that removes punctuation and stopwords then lemmatizes
+    Args:
+        text (string): input message to tokenize
+
+    Returns:
+        tokens (list): list of cleaned tokens in the message
+    """
     # normalize case and remove punctuation
     text = text.translate(PUNCTUATION_TABLE).lower()
 
@@ -46,7 +60,13 @@ def tokenize(text):
 
 
 def build_model():
-    """Returns ghe GridSearchCV object to be used as the model"""
+    """Returns the GridSearchCV object to be used as the model
+    Args:
+        None
+
+    Returns:
+        cv (scikit-learn GridSearchCV): Grid search model object
+    """
 
     clf = RandomForestClassifier(n_estimators=100)
 
@@ -72,7 +92,16 @@ def build_model():
     return cv
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    """Returns multi-output classification results"""
+    """Prints multi-output classification results
+    Args:
+        model (pandas dataframe): the scikit-learn fitted model
+        X_text (pandas dataframe): The X test set
+        Y_test (pandas dataframe): the Y test classifications
+        category_names (list): the category names
+
+    Returns:
+        None
+    """
 
     # Generate predictions
     Y_pred = model.predict(X_test)
@@ -82,7 +111,14 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    """dumps the model to the given filepath"""
+    """dumps the model to the given filepath
+    Args:
+        model (scikit-learn model): The fitted model
+        model_filepath (string): the filepath to save the model to
+
+    Returns:
+        None
+    """
     joblib.dump(model, model_filepath)
 
 
